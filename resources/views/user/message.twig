@@ -1,0 +1,5 @@
+{% extends 'user.base' %}
+{% block title %}{{ message_title }}{% endblock %}
+{% block content %}
+<div class="card card-outline card-info"><div class="card-header"><h2 class="card-title">{{ message_title }}</h2></div><div class="card-body" style="overflow-wrap:anywhere">{{ content|raw }}</div><div class="card-footer d-flex justify-content-between"><span class="text-muted">{{ message.created_at }}</span><a href="{{ route('user.inbox') }}">返回站内信</a></div></div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{
+    "name": "blessing/filter",
+    "description": "Filters API for designing plugin system. (local fork: only widened illuminate version constraints for Laravel 12/13)",
+    "type": "library",
+    "license": "MIT",
+    "version": "1.5.0",
+    "authors": [
+        {
+            "name": "Pig Fang",
+            "email": "g-plane@hotmail.com"
+        }
+    ],
+    "keywords": [
+        "filters",
+        "laravel",
+        "wordpress"
+    ],
+    "require": {
+        "illuminate/contracts": "^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || ^13",
+        "illuminate/support": "^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || ^13"
+    },
+    "require-dev": {
+        "illuminate/container": "^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || ^13",
+        "phpunit/phpunit": "~9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Blessing\\": "src/Blessing"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Blessing\\FilterServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable"
+}

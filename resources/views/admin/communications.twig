@@ -1,0 +1,57 @@
+{% extends 'admin.base' %}
+{% block title %}通知与公告{% endblock %}
+{% block content %}
+{% if session('communication_notice') %}<div class="alert alert-success" role="status">{{ session('communication_notice') }}</div>{% endif %}
+{% if errors.any() %}<div class="alert alert-danger" role="alert">{{ errors.first() }}</div>{% endif %}
+{% if editor_open %}
+<form id="communication-editor" method="post" action="{{ editing ? route('admin.communications.update', {communication:editing.id}) : route('admin.communications.store') }}" data-preview="{{ route('admin.communications.preview') }}" data-import="{{ route('admin.communications.import') }}">
+{{ csrf_field() }}{% if editing %}{{ method_field('PUT') }}{% endif %}
+<script type="application/json" id="communication-initial">{{ editor_data|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT'))|raw }}</script>
+<input type="hidden" name="blocks_json" id="communication-blocks">
+<div class="card card-outline card-primary"><div class="card-header"><h2 class="card-title">{{ editor_data.kind == 'announcement' ? '编辑站点公告' : (editing ? '编辑站内信 #' ~ editing.id : '新建站内信') }}</h2><div class="card-tools"><a class="btn btn-default" href="{{ route('admin.communications.index') }}">返回列表</a></div></div><div class="card-body">
+<div class="form-row">
+<div class="form-group col-md-5"><label for="communication-title">标题</label><input id="communication-title" class="form-control" name="title" required maxlength="100" value="{{ old('title',editor_data.title) }}"></div>
+<div class="form-group col-md-3"><label for="communication-kind">发布位置</label><select id="communication-kind" name="kind" class="form-control">{% for value,label in {'announcement':'站点公告','message':'站内信','both':'公告与站内信'} %}<option value="{{ value }}" {{ editor_data.kind == value ? 'selected' : '' }}>{{ label }}</option>{% endfor %}</select></div>
+<div class="form-group col-md-4"><label for="communication-locale">公告语言</label><input id="communication-locale" name="locale" class="form-control" value="{{ editor_data.locale }}" maxlength="20" placeholder="默认（所有语言）；或 zh_CN"></div>
+</div>
+<p class="text-muted small">公告显示在用户仪表盘，站内信按所选收件范围发送。</p>
+<div class="form-row" id="communication-audience">
+<div class="form-group col-md-4"><label for="communication-receiver">站内信收件人</label><select id="communication-receiver" name="receiver" class="form-control">{% for value,label in {'all':'全部用户','normal':'普通用户','uid':'指定 UID','email':'指定邮箱'} %}<option value="{{ value }}" {{ editor_data.audience.receiver == value ? 'selected' : '' }}>{{ label }}</option>{% endfor %}</select></div>
+<div class="form-group col-md-4"><label for="communication-uid">UID</label><input id="communication-uid" class="form-control" name="uid" type="number" min="1" value="{{ editor_data.audience.uid }}"></div>
+<div class="form-group col-md-4"><label for="communication-email">邮箱</label><input id="communication-email" class="form-control" name="email" type="email" value="{{ editor_data.audience.email }}"></div>
+</div>
+{% if editing.status == 'published' and editing.kind != 'announcement' %}<p class="text-muted mb-0">编辑后同步更新原收件人的站内信，保留已读状态。</p>{% endif %}
+</div></div>
+<div class="row">
+<div class="col-lg-6"><div class="card card-outline card-primary"><div class="card-header"><h2 class="card-title">内容设计器</h2></div><div class="card-body">
+<div class="form-group"><label for="communication-mode">编辑模式</label><select name="editor" id="communication-mode" class="form-control"><option value="blocks">可视化组件</option><option value="source">Markdown / HTML 源码</option></select></div>
+<div id="communication-visual">
+<div class="btn-toolbar mb-3" role="toolbar" aria-label="添加组件">{% for type,label in {'text':'文本','heading':'标题','alert':'提示框','collapse':'折叠卡片','divider':'分隔线'} %}<button class="btn btn-default mr-2 mb-2" type="button" data-add="{{ type }}">+ {{ label }}</button>{% endfor %}</div>
+<p class="text-muted small">点击组件编辑属性，拖动或使用上下箭头调整顺序。</p>
+<div id="communication-canvas" class="border rounded p-2 mb-3" style="min-height:90px" aria-label="组件列表"></div>
+<div id="communication-properties" hidden class="border rounded p-3">
+<h3 class="h6">组件属性</h3>
+<div class="form-group" id="block-title-group"><label for="block-title">标题</label><input id="block-title" class="form-control" maxlength="200"></div>
+<div class="form-group" id="block-content-group"><label for="block-content">正文（支持 Markdown）</label><div class="mb-1"><button type="button" class="btn btn-light btn-sm" data-format="bold">粗体</button> <button type="button" class="btn btn-light btn-sm" data-format="italic">斜体</button> <button type="button" class="btn btn-light btn-sm" data-format="list">列表</button></div><textarea id="block-content" class="form-control" rows="6" maxlength="10000"></textarea></div>
+<div class="form-group" id="block-tone-group"><label for="block-tone">颜色</label><select id="block-tone" class="form-control">{% for tone,label in {'info':'信息（青色）','success':'成功（绿色）','warning':'提醒（黄色）','danger':'重要（红色）','primary':'主题（蓝色）','secondary':'次要（灰色）'} %}<option value="{{ tone }}">{{ label }}</option>{% endfor %}</select></div>
+<div class="form-check" id="block-expanded-group"><input id="block-expanded" class="form-check-input" type="checkbox"><label class="form-check-label" for="block-expanded">默认展开</label></div>
+</div>
+</div>
+<div id="communication-source-panel" hidden><label for="communication-source">Markdown / HTML</label><textarea id="communication-source" name="source" class="form-control text-monospace" rows="18" maxlength="100000">{{ editor_data.source }}</textarea><button id="communication-import" type="button" class="btn btn-outline-primary mt-2">导入为可视化组件</button></div>
+<p id="communication-editor-status" class="small text-muted mt-2 mb-0" role="status" aria-live="polite"></p>
+</div></div></div>
+<div class="col-lg-6"><div class="card card-outline card-info"><div class="card-header"><h2 class="card-title">实时预览</h2></div><div id="communication-preview" class="card-body" aria-live="polite" style="overflow-wrap:anywhere;max-height:850px;overflow:auto">正在准备预览…</div></div></div>
+</div>
+<div class="mb-4"><button type="submit" name="operation" value="publish" class="btn btn-primary mr-2">{{ editing.status == 'published' ? '更新发布内容' : (editing.status == 'withdrawn' ? '重新发布' : '发布') }}</button>{% if editing.status != 'published' %}<button type="submit" name="operation" value="draft" class="btn btn-default mr-2">保存草稿</button>{% endif %}<a class="btn btn-default" href="{{ route('admin.communications.index') }}">返回列表</a></div>
+</form>
+{% else %}
+<p><a class="btn btn-primary" href="{{ route('admin.communications.index',{new:1}) }}">新建站内信</a> <a class="btn btn-default ml-2" href="{{ route('admin.communications.index',{announcement:1}) }}">编辑站点公告</a></p>
+<div class="card" id="communication-history"><div class="card-header"><h2 class="card-title">站内信发布与草稿记录</h2></div><div class="card-body table-responsive"><table class="table table-striped"><thead><tr><th>标题</th><th>位置</th><th>状态</th><th>已读 / 投递</th><th>更新时间</th><th>操作</th></tr></thead><tbody>{% for item in messages %}<tr><td>{{ item.title }}</td><td>{{ {'announcement':'公告','message':'站内信','both':'公告与站内信'}[item.kind] }}</td><td>{{ {'draft':'草稿','published':'已发布','withdrawn':'已撤回'}[item.status] }}</td><td>{{ item.read_count }} / {{ item.delivery_count }}</td><td>{{ item.updated_at }}</td><td class="text-nowrap"><a class="btn btn-default mr-2" href="{{ route('admin.communications.index',{edit:item.id}) }}">编辑</a>{% if item.status == 'published' %}<form class="d-inline" method="post" data-communication-withdraw data-title="{{ item.title }}" data-kind="{{ item.kind }}" action="{{ route('admin.communications.withdraw',{communication:item.id}) }}">{{ csrf_field() }}<button class="btn btn-danger" type="submit">撤回</button></form>{% endif %}</td></tr>{% else %}<tr><td colspan="6">暂无记录。</td></tr>{% endfor %}</tbody></table></div><div class="card-footer clearfix">
+<span class="text-muted float-left mt-2 mb-2 mr-3">共 {{ messages.total() }} 条，第 {{ messages.currentPage() }} / {{ messages.lastPage() }} 页</span>
+{% include 'shared/communication-pagination.twig' %}
+</div></div>
+{% endif %}
+<button type="button" id="communication-withdraw-open" data-toggle="modal" data-target="#communication-withdraw-modal" hidden aria-hidden="true" tabindex="-1"></button>
+<div class="modal fade" id="communication-withdraw-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="communication-withdraw-title"><div class="modal-dialog" role="document"><div class="modal-content"><div class="modal-header"><h2 class="modal-title h5" id="communication-withdraw-title">确认撤回</h2><button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button></div><div class="modal-body"><p>撤回“<strong id="communication-withdraw-name"></strong>”？</p><p id="communication-withdraw-impact" class="mb-0"></p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button><button type="button" class="btn btn-danger" id="communication-withdraw-confirm">确认撤回</button></div></div></div></div>
+{% endblock %}
+{% block before_foot %}<script src="{{ url('app/communications.js?v=6.0.6_patch') }}" defer></script>{% endblock %}

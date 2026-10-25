@@ -1,0 +1,14 @@
+<div class="card card-primary card-outline">
+  <div class="card-header">
+    <h3 class="card-title">{{ trans('user.announcement') }}</h3>
+    {% if auth_user() and auth_user().isAdmin() %}
+      &nbsp;
+      <a aria-label="编辑站点公告" title="编辑站点公告" href="{{ route('admin.communications.index', {announcement:1}) }}">
+        <i class="fas fa-edit"></i>
+      </a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {{ announcement|raw }}
+  </div>
+</div>

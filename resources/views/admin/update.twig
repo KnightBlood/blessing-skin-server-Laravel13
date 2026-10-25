@@ -1,0 +1,157 @@
+{% extends 'admin.base' %}
+
+{% block title %}{{ trans('general.check-update') }}{% endblock %}
+
+{% block content %}
+  {% if session('update_notice') %}<div class="alert alert-success" role="status">{{ session('update_notice') }}</div>{% endif %}
+  {% if session('update_error') %}<div class="alert alert-danger" role="alert">{{ session('update_error') }}</div>{% endif %}
+  {% if errors.any() %}<div class="alert alert-danger" role="alert">{{ errors.first() }}</div>{% endif %}
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card card-primary">
+        <div class="card-header">
+          <h3 class="card-title">{{ trans('admin.update.info.title') }}</h3>
+        </div>
+        <div class="card-body">
+          {% if can_update %}
+            <div class="callout callout-info">
+              {{ trans('admin.update.info.available') }}
+            </div>
+            <div class="container-fluid">
+              <div class="row mb-3">
+                <div class="col-sm-4">
+                  {{ trans('admin.update.info.versions.latest') }}
+                </div>
+                <div class="col-sm-8">
+                  v{{ info.latest }}
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-sm-4">
+                  {{ trans('admin.update.info.versions.current') }}
+                </div>
+                <div class="col-sm-8">
+                  v{{ info.current }}
+                </div>
+              </div>
+            </div>
+          {% else %}
+            {% if error %}
+              <div class="callout callout-danger">
+                {{ trans('admin.update.errors.connection', {error: error}) }}
+              </div>
+            {% else %}
+              <div class="callout callout-success">
+                {{ trans('admin.update.info.up-to-date') }}
+              </div>
+            {% endif %}
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-sm-4">
+                  {{ trans('admin.update.info.versions.current') }}
+                </div>
+                <div class="col-sm-8">
+                  v{{ info.current }}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        <div class="card-footer">
+          {% if can_update %}
+            <button class="btn bg-primary" id="update">
+              {{ trans('admin.update.info.button') }}
+            </button>
+          {% else %}
+            <button class="btn bg-primary" disabled="disabled">
+              {{ trans('admin.update.info.button') }}
+            </button>
+          {% endif %}
+          <a
+            target="_blank"
+            class="btn btn-default float-right"
+            href="https://github.com/DreamCraft-Tech/blessing-skin-server-patch/releases"
+          >
+            {{ trans('admin.update.info.check-github') }}
+          </a>
+        </div>
+      </div>
+      <div class="card card-outline card-primary">
+        <div class="card-header"><h3 class="card-title">ZIP 运行包更新</h3></div>
+        <div class="card-body">
+          <p>上传完整的 Blessing Skin 运行包，校验后安装。支持直接包含程序文件，或外层包含一个目录的 ZIP。</p>
+          <p class="text-muted">运行包包含 <code>vendor/</code> 和编译后的前端资源。当前 PHP / 应用上传上限：<strong>{{ upload_limits.effective }}</strong>。<br>PHP 文件限制：{{ upload_limits.php_upload }}；请求限制：{{ upload_limits.php_post }}；应用配置：{{ upload_limits.application }}。<br>OpenResty 请求限制由站点配置决定。</p>
+          {% if not upload_limits.enabled %}<p class="text-warning">PHP 文件上传已关闭。</p>{% endif %}
+          <form method="post" action="{{ route('admin.update.upload') }}" enctype="multipart/form-data" data-system-update-form data-progress="正在上传并校验运行包…">
+            {{ csrf_field() }}
+            <div class="form-group"><label for="system-update-package">选择 ZIP 运行包</label><div class="custom-file"><input id="system-update-package" class="custom-file-input" type="file" name="package" accept=".zip,application/zip" required {{ not upload_limits.enabled ? 'disabled' : '' }}><label class="custom-file-label" for="system-update-package" data-browse="选择文件">尚未选择文件</label></div></div>
+            <button type="submit" class="btn btn-primary" {{ not upload_limits.enabled ? 'disabled' : '' }}>上传并校验</button>
+            <p class="mt-2 mb-0" role="status" data-update-progress hidden></p>
+          </form>
+          {% if package %}
+          <hr>
+          <dl class="row">
+            <dt class="col-sm-4">目标版本</dt><dd class="col-sm-8">{{ package.version }}</dd>
+            <dt class="col-sm-4">程序文件</dt><dd class="col-sm-8">{{ package.count }} 个</dd>
+            <dt class="col-sm-4">SHA-256</dt><dd class="col-sm-8"><code style="overflow-wrap:anywhere">{{ package.sha256 }}</code></dd>
+          </dl>
+          <form method="post" action="{{ route('admin.update.install') }}" data-system-update-form data-progress="正在安装运行包…">
+            {{ csrf_field() }}<input type="hidden" name="id" value="{{ package.id }}">
+            <button type="submit" class="btn btn-success">确认安装 {{ package.version }}</button>
+            <p class="mt-2 mb-0" role="status" data-update-progress hidden></p>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card card-info">
+        <div class="card-header">
+          <h3 class="card-title">
+            {{ trans('admin.update.cautions.title') }}
+          </h3>
+        </div>
+        <div class="card-body">
+          {{ trans('admin.update.cautions.text')|nl2br }}
+          <a target="_blank" href="https://blessing.netlify.com/update-sources.html">
+            {{ trans('admin.update.cautions.link') }}
+          </a>
+        </div>
+      </div>
+      {% for release in patch_releases %}
+      <div class="card card-outline card-info">
+        <div class="card-header p-0">
+          <button type="button" class="btn btn-block text-left font-weight-bold collapsed p-3" data-toggle="collapse" data-target="#version-changelog-{{ loop.index }}" aria-expanded="false" aria-controls="version-changelog-{{ loop.index }}">
+            {{ release.version == info.current ? '当前版本更新日志' : '版本更新日志' }} · {{ release.version }} <span class="float-right"><i class="fas fa-angle-down" aria-hidden="true"></i></span>
+          </button>
+        </div>
+        <div class="card-body collapse" id="version-changelog-{{ loop.index }}">
+          <p class="text-muted">{{ release.date }}</p>
+          <ul class="pl-3 mb-0">{% for note in release.notes %}<li class="mb-2">{{ note }}</li>{% endfor %}</ul>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block before_foot %}
+<script>
+var packageInput = document.getElementById('system-update-package');
+packageInput.addEventListener('change', function () {
+  packageInput.nextElementSibling.textContent = packageInput.files.length ? packageInput.files[0].name : '尚未选择文件';
+});
+document.querySelectorAll('[data-system-update-form]').forEach(function (form) {
+  form.addEventListener('submit', function () {
+    form.querySelector('button[type="submit"]').disabled = true;
+    var status = form.querySelector('[data-update-progress]');
+    status.hidden = false;
+    var spinner = document.createElement('i');
+    spinner.className = 'fas fa-spinner fa-spin mr-1';
+    spinner.setAttribute('aria-hidden', 'true');
+    status.appendChild(spinner);
+    status.appendChild(document.createTextNode(form.dataset.progress));
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+[
+  {
+    "repository": "blessing-skin-server-patch",
+    "commit": "daf1b5c1c2465cfb20493ad5ceac6dd0b23d3078",
+    "message": "build: adapt Blessing Skin 6.0.2 snapshot to PHP 8.5",
+    "version": "php85-base"
+  },
+  {
+    "repository": "blessing-skin-server-patch",
+    "commit": "76d67752a5b42fd05d1308a28842706eae899ae9",
+    "message": "6.0.3_patch: restore administrator controls and add ZIP updates",
+    "artifact": "outputs/system-6.0.3_patch/blessing-skin-server_6.0.3_patch_overlay.zip",
+    "sha256": "5b89aec29b88ecbbc5301ff78c6c0c1e03d1c4a1ef19b186ee39787a83c6b187",
+    "version": "6.0.3_patch"
+  },
+  {
+    "repository": "blessing-skin-server-patch",
+    "commit": "7041bced33a1b4830071d8157736934981c9f0a7",
+    "message": "6.0.4_patch: add communications center and visual announcement editor",
+    "artifact": "outputs/system-6.0.4_patch/blessing-skin-server_6.0.4_patch_overlay.zip",
+    "sha256": "745b7058196e1d881e85f6bed5907e50f9188d30c9b7c01cf1a4ab3807b7bd56",
+    "version": "6.0.4_patch"
+  },
+  {
+    "repository": "blessing-skin-server-patch",
+    "commit": "388d23ceaafea7186ff3ff9ce67d09e52858fbd6",
+    "message": "6.0.5_patch: unify list controls, pagination and announcement editing",
+    "artifact": "outputs/system-6.0.5_patch/blessing-skin-server_6.0.5_patch_overlay.zip",
+    "sha256": "9d05c463819b550d472a6fcd7442fa97443434325124fcd5552ea210b80c1bd0",
+    "version": "6.0.5_patch"
+  },
+  {
+    "repository": "blessing-skin-server-patch",
+    "commit": "78830e8a9190b4d6516331f629ac065a5f3dcdf5",
+    "message": "6.0.6_patch: unify ZIP upload controls and fold version changelogs",
+    "artifact": "outputs/system-6.0.6_patch/blessing-skin-server_6.0.6_patch_overlay.zip",
+    "sha256": "c202ba879fc6984aa2e7ad93615befd1834afccafb649fe585991cd88a326224",
+    "version": "6.0.6_patch"
+  }
+]

@@ -1,0 +1,20 @@
+<nav class="float-right" aria-label="通知与公告分页">
+  <ul class="pagination mb-2">
+    <li class="page-item {{ messages.onFirstPage() ? 'disabled' : '' }}">
+      {% if messages.onFirstPage() %}<span class="page-link" aria-disabled="true">‹<span class="d-inline d-sm-none ml-1">上一页</span></span>{% else %}<a class="page-link" href="{{ messages.previousPageUrl() }}" rel="prev" aria-label="上一页">‹<span class="d-inline d-sm-none ml-1">上一页</span></a>{% endif %}
+    </li>
+    {% set previous = 0 %}
+    {% for segment in pagination %}{% if segment %}
+      {% for number,link in segment %}
+        {% if previous and number > previous + 1 %}<li class="page-item disabled d-none d-sm-block"><span class="page-link" aria-disabled="true">…</span></li>{% endif %}
+        <li class="page-item d-none d-sm-block {{ number == messages.currentPage() ? 'active' : '' }}">
+          {% if number == messages.currentPage() %}<span class="page-link" aria-current="page">{{ number }}</span>{% else %}<a class="page-link" href="{{ link }}" aria-label="第 {{ number }} 页">{{ number }}</a>{% endif %}
+        </li>
+        {% set previous = number %}
+      {% endfor %}
+    {% endif %}{% endfor %}
+    <li class="page-item {{ messages.hasMorePages() ? '' : 'disabled' }}">
+      {% if messages.hasMorePages() %}<a class="page-link" href="{{ messages.nextPageUrl() }}" rel="next" aria-label="下一页"><span class="d-inline d-sm-none mr-1">下一页</span>›</a>{% else %}<span class="page-link" aria-disabled="true"><span class="d-inline d-sm-none mr-1">下一页</span>›</span>{% endif %}
+    </li>
+  </ul>
+</nav>

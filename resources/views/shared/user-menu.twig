@@ -1,0 +1,25 @@
+<li class="nav-item dropdown user-menu">
+  <a href="#" class="nav-link d-flex align-items-center" data-toggle="dropdown">
+    <picture>
+      <source srcset="{{ avatar }}" type="image/webp">
+      <img src="{{ avatar_png }}" class="bs-avatar mr-2" alt="User Image">
+    </picture>
+    <span class="d-none d-md-inline d-sm-block" data-mark="nickname">
+      {{ user.nickname ?? user.email }}
+    </span>
+  </a>
+
+  <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+    {% for item in menu %}
+      {% if item.link == '#divider' %}
+        <div class="dropdown-divider"></div>
+      {% else %}
+        <a class="dropdown-item" href="{{ item.link }}">{{ item.label }}</a>
+      {% endif %}
+    {% endfor %}
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="#" id="logout-button">
+      {{ trans('general.logout') }}
+    </a>
+  </div>
+</li>

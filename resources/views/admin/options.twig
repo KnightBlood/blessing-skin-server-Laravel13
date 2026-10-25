@@ -1,0 +1,18 @@
+{% extends 'admin.base' %}
+
+{% block title %}{{ trans('general.options') }}{% endblock %}
+
+{% block content %}
+  {% if errors.any() %}<div class="alert alert-danger" role="alert">{{ errors.first() }}</div>{% endif %}
+  <div class="row">
+    <div class="col-md-6">
+      {{ forms.general.render()|raw }}
+    </div>
+    <div class="col-md-6">
+      <div class="card card-outline card-info"><div class="card-body"><a href="{{ route('admin.communications.index') }}">前往通知与公告</a></div></div>
+      {{ forms.meta.render()|raw }}
+      {{ forms.recaptcha.render()|raw }}
+      {{ forms.updates.render()|raw }}
+    </div>
+  </div>
+{% endblock %}

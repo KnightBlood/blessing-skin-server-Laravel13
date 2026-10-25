@@ -1,0 +1,10 @@
+{
+  "name": "fake",
+  "version": "0.0.0",
+  "namespace": "Fake",
+  "enchants": {
+    "providers": [
+      "Fake"
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+{% extends 'user.base' %}
+{% block title %}站内信{% endblock %}
+{% block content %}
+<div class="card card-outline card-info"><div class="card-header"><h2 class="card-title">站内信</h2></div><div class="card-body"><table class="table table-striped"><thead><tr><th>标题</th><th>状态</th><th>时间</th></tr></thead><tbody>{% for item in messages %}<tr><td><a href="{{ route('user.inbox.message',{id:item.id}) }}">{{ item.display_title }}</a></td><td>{{ item.read_at ? '已读' : '未读' }}</td><td>{{ item.created_at }}</td></tr>{% else %}<tr><td colspan="3">暂无站内信。</td></tr>{% endfor %}</tbody></table><div class="d-flex justify-content-between"><span>共 {{ messages.total() }} 条</span><div>{% if messages.previousPageUrl() %}<a class="btn btn-light" href="{{ messages.previousPageUrl() }}">上一页</a>{% endif %}{% if messages.nextPageUrl() %}<a class="btn btn-light" href="{{ messages.nextPageUrl() }}">下一页</a>{% endif %}</div></div></div></div>
+{% endblock %}
