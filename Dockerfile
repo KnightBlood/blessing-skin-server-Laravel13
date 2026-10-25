@@ -60,12 +60,14 @@ RUN composer dump-autoload -o --no-dev -n && \
     sed 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/' -i storage/.env && \
     sed 's/DB_DATABASE=blessingskin/DB_DATABASE=\/app\/storage\/database\.db/' -i storage/.env
 
-FROM php:8-apache
+# 运行时要求 PHP >= 8.5（composer.json 的 "php": "^8.5" 与 bootstrap/chkenv.php）。
+FROM php:8.5-apache
 
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
+# imagick 是 bootstrap/chkenv.php 的必需扩展（纹理渲染与水印依赖它）。
 RUN chmod +x /usr/local/bin/install-php-extensions && \
-    install-php-extensions gd zip
+    install-php-extensions gd zip imagick
 
 WORKDIR /app
 

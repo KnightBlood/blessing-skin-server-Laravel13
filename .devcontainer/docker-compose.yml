@@ -6,10 +6,11 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # Update 'VARIANT' to pick a version of PHP version: 8, 8.1, 8.0, 7, 7.4
-        # Append -bullseye or -buster to pin to an OS version.
-        # Use -bullseye variants on local arm64/Apple Silicon.
-        VARIANT: "8-bullseye"
+        # Update 'VARIANT' to pick a version of PHP version.
+        # 运行时要求 PHP >= 8.5（composer.json "php": "^8.5" 与 bootstrap/chkenv.php）。
+        # devcontainers/php 3 代起仅提供 bookworm / trixie 变体（无 bullseye），
+        # 8.5 示例：3-8.5-bookworm、3-8.5-trixie。
+        VARIANT: "3-8.5-bookworm"
         # Optional Node.js version
         NODE_VERSION: "lts/*"
 
@@ -30,7 +31,7 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
   db:
-    image: mariadb:10.4
+    image: mariadb:11.8
     restart: unless-stopped
     volumes:
       - mariadb-data:/var/lib/mysql

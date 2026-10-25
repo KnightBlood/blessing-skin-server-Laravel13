@@ -961,10 +961,15 @@ python tools/build-php85.py --output <dir> --skip-install --yarn <yarn-shim>
 - [x] 5.12 `.env.example`、`phpunit.xml`、`Dockerfile`、`.devcontainer` 同步
   - `.env.example` 已新增 `CACHE_PREFIX` / `REDIS_PREFIX` / `SESSION_COOKIE`（35–36 行为 DRIVER）；
   - `phpunit.xml` 已更新（见 5.11）；
-  - `Dockerfile` 仍使用 `FROM php:8-apache`（可选更新项，尚未改；
-    `mcr.microsoft.com/devcontainers/php:8.5` 标签确认存在）；
-  - `.devcontainer/docker-compose.yml` 仍使用 `VARIANT: "8-bullseye"` 与 `mariadb:10.4`
-    （可选更新项，尚未改）。
+  - `Dockerfile` 已改为 `FROM php:8.5-apache`，并补充 `imagick` 扩展
+    （`bootstrap/chkenv.php` 的必需扩展）；
+  - `.devcontainer/Dockerfile` 已改为 `mcr.microsoft.com/devcontainers/php:3-8.5-bookworm`
+    （旧 `0-8-bullseye` 为 PHP 8.2.6，会触发 `chkenv.php` 的 8.5 拦截；
+    `3-` 代无 bullseye，8.5 仅 bookworm/trixie），并补 `pecl install imagick`；
+  - `.devcontainer/docker-compose.yml` 的 `VARIANT` 已改为 `3-8.5-bookworm`，
+    `mariadb` 从 `10.4` 升到 `11.8`（支持 `DELETE ... JOIN` + `ORDER BY`/`LIMIT`）。
+  - 以上 Docker 改动本机无 Docker，未实测；标签与 PHP 版本均已通过 MCR / Docker Hub
+    清单核实（devcontainers/php:3-8.5-bookworm = PHP 8.5.7；mariadb:11.8 = 11.8.9）。
 
 ### 阶段 5 结果记录
 
@@ -1028,8 +1033,9 @@ python tools/build-php85.py --output <dir> --skip-install --yarn <yarn-shim>
 - AGENTS §7 验证清单全部通过：
   `composer validate` ✅ / `artisan --version` ✅ / `route:list` ✅ / `config:cache` ✅ /
   `view:clear` ✅ / `test` ✅ / `yarn install --frozen-lockfile` ✅ / `yarn build` ✅。
-- 阻塞项：无。可选更新项（未改）：`Dockerfile` 的 `FROM php:8-apache`、
-  `.devcontainer/docker-compose.yml` 的 `VARIANT: "8-bullseye"` 与 `mariadb:10.4`。
+- 阻塞项：无。Docker 相关改动（`Dockerfile` 的 `FROM php:8.5-apache`、
+  `.devcontainer` 的 `3-8.5-bookworm` 与 `mariadb:11.8`）已落地，但本机无 Docker 无法实测，
+  标签与 PHP 版本均已通过 MCR / Docker Hub 清单核实。
 - 风险路径 #1912 / CVE-2026-39976：已核实本应用 `firstParty()` 恒 false，
   风险路径不可达，不修，已写入文档。
 
