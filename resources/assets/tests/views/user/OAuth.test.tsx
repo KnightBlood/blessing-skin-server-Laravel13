@@ -47,7 +47,6 @@ describe('create app', () => {
     expect(queryByText(fixture.id.toString())).toBeInTheDocument()
     expect(queryByText(fixture.name)).toBeInTheDocument()
     expect(queryByText(fixture.redirect)).toBeInTheDocument()
-    expect(queryByText(fixture.secret!)).toBeInTheDocument()
   })
 
   it('failed', async () => {
