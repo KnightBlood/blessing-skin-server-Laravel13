@@ -1,6 +1,6 @@
-# DreamCraft Blessing Skin Server Patch
+# Blessing Skin Server Laravel 13 Patch
 
-基于 Blessing Skin Server 6.0.2 开发快照 `52f6fef` 的 PHP 8.5 / Laravel 13 补丁分支，当前版本 **6.0.11_patch**。
+基于 `DreamCraft-Tech/blessing-skin-server-patch` 分支（Blessing Skin Server 6.0.10_patch，Laravel 10）升级到 PHP 8.5 / Laravel 13 的补丁分支，当前版本 **6.0.11_patch**。
 
 > 6.0.11_patch 起运行环境由 Laravel 10.50.3 逐级升级至 **Laravel 13.38.0**（10 → 11 → 12 → 13），
 > PHP 最低要求同步提升为 **8.5.0**。逐级升级与决策记录见 `UPGRADE-TASKS.md`。

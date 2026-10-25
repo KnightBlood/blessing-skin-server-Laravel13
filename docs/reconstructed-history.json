@@ -2,7 +2,7 @@
   {
     "repository": "blessing-skin-server-patch",
     "commit": "daf1b5c1c2465cfb20493ad5ceac6dd0b23d3078",
-    "message": "build: adapt Blessing Skin 6.0.2 snapshot to PHP 8.5",
+    "message": "build: adapt DreamCraft-Tech/blessing-skin-server-patch (6.0.10_patch) to PHP 8.5",
     "version": "php85-base"
   },
   {

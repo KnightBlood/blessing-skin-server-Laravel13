@@ -53,7 +53,7 @@
 
 # 6.0.4_patch · 2026-10-24
 
-基于 Blessing Skin Server 6.0.2（52f6fef）的 PHP 8.5 定制版本，包含 6.0.3_patch 的管理员入口修复与 ZIP 更新。
+基于 `DreamCraft-Tech/blessing-skin-server-patch` 分支（Blessing Skin Server 6.0.10_patch，Laravel 10）的 PHP 8.5 定制版本，包含 6.0.3_patch 的管理员入口修复与 ZIP 更新。
 
 - 上传区域读取现场 PHP 文件与请求上限，并与应用配置计算可接收大小。
 - 管理菜单新增“通知与公告”，位于仪表盘与用户管理之间。
