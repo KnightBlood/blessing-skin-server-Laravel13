@@ -1,0 +1,8 @@
+{
+  "spec": 2,
+  "php": "8.5.0",
+  "latest": "6.0.11_patch",
+  "url": "https://skin.blessing.dreamcraft.eu.org/releases/v6.0.11_patch/blessing-skin-server_6.0.11_patch_php85.zip",
+  "sha256": "33ec2f2122738fcf053724023a93ea2624def280d305303c2a33386db78f641c",
+  "package": "full"
+}
