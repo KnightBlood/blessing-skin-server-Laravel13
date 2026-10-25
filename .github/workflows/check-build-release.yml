@@ -1,0 +1,116 @@
+name: Check, build and release
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: server-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  check-build:
+    name: PHP 8.5 tests and complete upgrade ZIP
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      APP_ENV: testing
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@d52fc211a0436f8839a587b3b5b8efddab4744ea
+        with:
+          php-version: '8.5'
+          extensions: ctype, dom, fileinfo, gd, imagick, intl, mbstring, openssl, pdo_mysql, pdo_sqlite, sqlite3, tokenizer, xml, zip
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install dependencies
+        run: |
+          npm install --global yarn@1.22.22
+          composer install --no-interaction --prefer-dist
+          yarn install --frozen-lockfile --non-interactive
+      - name: Syntax and release integrity tests
+        run: |
+          python3 tools/check-source.py
+          python3 -m unittest discover -s tools/tests -v
+      - name: Backend tests
+        env:
+          APP_ENV: testing
+        run: vendor/bin/phpunit --log-junit backend-tests.xml
+      - name: Frontend type checks and tests
+        env:
+          CI: 'true'
+        run: |
+          yarn type:check
+          yarn test --runInBand
+      - name: Build complete production runtime
+        run: |
+          rm -f storage/install.lock
+          python3 tools/build-php85.py --output build-php85
+      - name: Validate ZIP and exercise the actual updater
+        run: |
+          python3 tools/verify-packages.py --kind server --assets build-php85
+          php tools/verify-update-package.php build-php85/blessing-skin-server_$(node -p "require('./package.json').version")_php85.zip
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: server-runtime
+          path: |
+            build-php85/*.zip
+            build-php85/manifest.json
+            build-php85/SHA256SUMS
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+  release:
+    name: Publish complete runtime ZIP
+    needs: check-build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: server-runtime
+          path: release-assets
+      - name: Publish verified assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/publish-release.py --kind server --assets release-assets
+      - name: Publish web-publish branch from released assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_BASE_URL: ${{ vars.PAGES_BASE_URL || 'https://skin.blessing.dreamcraft.eu.org' }}
+        run: |
+          gh auth setup-git --hostname github.com
+          python3 tools/publish-web.py --kind server --base-url "$PAGES_BASE_URL" --output pages-site
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: pages-site
+  pages:
+    name: Deploy web-publish to GitHub Pages
+    needs: release
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy published branch artifact
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
