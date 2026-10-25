@@ -17,6 +17,8 @@ _ide_helper.php
 junit.xml
 storage/*.db
 storage/*.sqlite
+database/*.db
+database/*.sqlite
 storage/insane-profile-cache
 storage/oauth-public.key
 storage/oauth-private.key
